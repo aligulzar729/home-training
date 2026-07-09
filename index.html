@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Home Training Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Schibsted+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <header class="hero">
+    <p class="context">A home training plan for severe fatty liver, built around my daily walk.</p>
+    <h1>Walk daily. Lift quietly. <span class="accent">Heal my liver.</span></h1>
+    <p class="lead">The change that matters most is losing <b>7 to 10 percent of my body weight</b>. My daily walk is the engine. These dumbbell sessions add the muscle that lowers liver fat even before the scale moves. Everything here is low impact, floor and standing only, and quiet enough for an apartment.</p>
+    <div class="clearance">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z" stroke="#9a5410" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8v4.5M12 15.5h.01" stroke="#9a5410" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span>My NAFLD is <b>severe</b>. I need my doctor's clearance before the dumbbell work, plus baseline liver labs so I can track real progress, not just weight.</span>
+    </div>
+  </header>
+
+  <!-- MILESTONES -->
+  <section class="block">
+    <h2>Three targets my liver will feel</h2>
+    <p class="sub">Measured from 92 kg. Aim for half a kilo to one kilo a week. Steady wins, especially for the liver.</p>
+    <div class="tracker">
+      <div class="tk-row">
+        <div class="tk-cur">
+          <label for="wInput">Current weight</label>
+          <div class="tk-input"><input id="wInput" type="number" inputmode="decimal" step="0.1" placeholder="92"><span>kg</span><button onclick="logWeight()">Log</button></div>
+        </div>
+        <div class="tk-stat"><span class="v" id="tkLost">0.0 kg</span><span class="l">lost so far</span></div>
+        <div class="tk-stat"><span class="v" id="tkNext">4.6 kg</span><span class="l" id="tkNextL">to the 5% mark</span></div>
+        <div class="tk-stat"><span class="v" id="tkStreak">0</span><span class="l">day streak</span></div>
+      </div>
+      <svg id="spark" class="spark" viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </div>
+    <div class="path">
+      <div class="node now"><span class="p">Today</span><span class="w">92 kg</span><span class="lab">where I am starting</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node"><span class="p">Lose 5%</span><span class="w">87.4 kg</span><span class="lab">liver fat starts to fall</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node"><span class="p">Lose 7%</span><span class="w">85.6 kg</span><span class="lab">inflammation eases</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node"><span class="p">Lose 10%</span><span class="w">82.8 kg</span><span class="lab">scarring can reverse</span></div>
+    </div>
+  </section>
+
+  <!-- TODAY -->
+  <section class="block">
+    <h2>Which kind of day is it?</h2>
+    <p class="sub">Pick one. Strength days are fixed, Tuesday, Thursday, and Saturday, so the weather only ever changes the walk, never the lifting.</p>
+    <div class="modes">
+      <button class="mode on" data-mode="walked" onclick="setMode('walked')" aria-pressed="true">
+        <div class="tick"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12l5 5 9-11" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="top">
+          <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><ellipse cx="8" cy="9" rx="3" ry="4.4" fill="currentColor"/><ellipse cx="16" cy="15" rx="3" ry="4.4" fill="currentColor"/><circle cx="6" cy="3.6" r="1.1" fill="currentColor"/><circle cx="9" cy="3.2" r="1.1" fill="currentColor"/><circle cx="14" cy="9.4" r="1.1" fill="currentColor"/><circle cx="17" cy="9" r="1.1" fill="currentColor"/></svg></span>
+          <span class="ttl">Walk day</span>
+        </div>
+        <div class="desc">Mon, Wed, Fri. I did my 70 minute walk. A light after dinner session: core, posture, stretch.</div>
+        <span class="chip">about 30 minutes, easy</span>
+      </button>
+      <button class="mode" data-mode="strength" onclick="setMode('strength')" aria-pressed="false">
+        <div class="tick"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12l5 5 9-11" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="top">
+          <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="9" width="3" height="6" rx="1.2" fill="currentColor"/><rect x="19" y="9" width="3" height="6" rx="1.2" fill="currentColor"/><rect x="5.5" y="7" width="3" height="10" rx="1.2" fill="currentColor"/><rect x="15.5" y="7" width="3" height="10" rx="1.2" fill="currentColor"/><rect x="8.5" y="11" width="7" height="2" rx="1" fill="currentColor"/></svg></span>
+          <span class="ttl">Strength day</span>
+        </div>
+        <div class="desc">Tue, Thu, Sat. The dumbbell session, whether or not I also walked. This is what lowers liver fat directly.</div>
+        <span class="chip">about 45 to 60 minutes</span>
+      </button>
+      <button class="mode" data-mode="indoor" onclick="setMode('indoor')" aria-pressed="false">
+        <div class="tick"><svg width="13" height="13" viewBox="0 0 24 24"><path d="M5 12l5 5 9-11" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="top">
+          <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9.5" r="3" fill="currentColor"/><circle cx="14.5" cy="8.5" r="3.6" fill="currentColor"/><rect x="5.5" y="8.5" width="12" height="5" rx="2.5" fill="currentColor"/><path d="M8 17l-1 2.4M12 17l-1 2.4M16 17l-1 2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span class="ttl">Couldn't walk</span>
+        </div>
+        <div class="desc">Rain or heat killed the walk on a non lifting day. Quiet indoor cardio plus core to replace it.</div>
+        <span class="chip">about 40 to 50 minutes</span>
+      </button>
+    </div>
+
+    <button class="startbtn" id="startBtn" onclick="fxOpen()"></button>
+
+    <div class="sessionbar">
+      <div class="switch" role="tablist" aria-label="Switch session">
+        <button id="sw-walked" class="on" onclick="setMode('walked')">Walk day</button>
+        <button id="sw-strength" onclick="setMode('strength')">Strength</button>
+        <button id="sw-indoor" onclick="setMode('indoor')">Couldn't walk</button>
+      </div>
+      <div class="prog">
+        <div class="track"><div class="fill" id="progfill"></div></div>
+        <span class="count" id="progcount">0 of 0 done</span>
+        <button class="reset" onclick="resetMode()">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel show" id="walked"></div>
+    <div class="panel" id="strength"></div>
+    <div class="panel" id="indoor"></div>
+  </section>
+
+  <!-- LOADING -->
+  <section class="block">
+    <h2>How much to lift, and when to add more</h2>
+    <p class="sub">Starting weights for the dumbbell day. They are light on purpose while I learn the movements.</p>
+    <div class="safety">
+      <h4>Where to start</h4>
+      <p>These numbers are the total weight of each loaded dumbbell, bar included. For the first week or two they should feel easy. That is the point, while my form settles and my back learns the hinge. Load the plates to land close to each figure.</p>
+      <div class="loadtable">
+        <div class="loadrow"><span class="ex">Goblet squat</span><span class="amt">8 kg, one dumbbell</span></div>
+        <div class="loadrow"><span class="ex">Romanian deadlift</span><span class="amt">6 kg each hand</span></div>
+        <div class="loadrow"><span class="ex">Dumbbell floor press</span><span class="amt">5 kg each hand</span></div>
+        <div class="loadrow"><span class="ex">Dumbbell row</span><span class="amt">7 kg each hand</span></div>
+        <div class="loadrow"><span class="ex">Overhead press</span><span class="amt">4 kg each hand</span></div>
+        <div class="loadrow"><span class="ex">Reverse lunge</span><span class="amt">bodyweight, then 4 kg each hand</span></div>
+        <div class="loadrow"><span class="ex">Weighted glute bridge</span><span class="amt">8 kg, one dumbbell</span></div>
+        <div class="loadrow"><span class="ex">Farmer's carry</span><span class="amt">8 kg each hand</span></div>
+      </div>
+      <h4>When to add weight</h4>
+      <p>One simple rule. Once I can finish <b>every set at the top of the rep range, with clean form, two sessions in a row</b>, I add the smallest jump. On a single dumbbell that is one 0.5 kg plate on each side, so <b>1 kg on the bar</b>. On the two handed lifts, add that to each dumbbell. If my form breaks down at the new weight, I added too soon, so I take it back off. There is no rush.</p>
+      <h4>How fast it climbs</h4>
+      <p>Lower body and pulls move fastest at the start. Expect to add to the <b>goblet squat, deadlift, row, glute bridge, and carry about every one to two weeks</b>. The <b>presses climb slower, more like every two to four weeks</b>, in the same small 1 kg steps. On weeks the weight does not move, adding one rep or one set counts as progress too.</p>
+      <p>As a rough guide over three months, a beginner often takes the goblet squat from 8 kg toward the top of what one dumbbell holds, the deadlift from 6 to about 9 or 10 kg per hand, and the overhead press from 4 to about 7 kg per hand. One honest note about my set: each dumbbell maxes out near 10 kg, so the squat and deadlift will outgrow it within a couple of months. That is the moment to assemble the long barbell with the extension shafts, which takes every plate I own and carries those two lifts for a long time. My numbers will be my own, so the rep range and my form decide, not the calendar.</p>
+      <h4>Stalls, and running out of plates</h4>
+      <p>If a lift stalls for three sessions, or my low back feels tight, drop it by about 2 to 4 kg and build back up. That reset is part of the process, not a step back. When the big lifts run out of plates as dumbbells, since both hands share one set, <b>build the barbell instead</b> and load every plate on it, or add a set and lower each rep slowly to a count of three. That keeps them hard without needing more iron.</p>
+    </div>
+  </section>
+
+  <!-- WEEK -->
+  <section class="block">
+    <h2>A rhythm I can keep</h2>
+    <p class="sub">Six active days. Green marks a walk day, blue marks a strength day.</p>
+    <div class="week" id="week"></div>
+    <div class="rule" id="weekrule"></div>
+  </section>
+
+  <!-- APPS -->
+  <section class="block">
+    <h2>Free apps that talk to my Apple Watch</h2>
+    <p class="sub">This whole stack is free or free tier, and it all syncs with Apple Health.</p>
+    <div class="cols" id="apps"></div>
+  </section>
+
+  <!-- SAFETY -->
+  <section class="block">
+    <h2>The parts that keep me healthy</h2>
+    <div class="safety" id="safety"></div>
+  </section>
+
+  <p class="foot" id="foot"></p>
+
+</div>
+
+<!-- GUIDED FULL-SCREEN PLAYER -->
+<div class="focus" id="focus" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Guided session">
+  <div class="focus-top">
+    <button class="fx-prev" id="fxPrev" onclick="fxGo(-1)" aria-label="Previous exercise">&lsaquo; Back</button>
+    <div class="fx-step" id="fxStep">1 / 1</div>
+    <button class="fx-exit" onclick="fxClose()" aria-label="Exit guided session">&#10005;</button>
+  </div>
+  <div class="fx-bar"><div class="fx-fill" id="fxFill"></div></div>
+  <div id="fxMain">
+    <div class="focus-body">
+      <div class="fx-art" id="fxArt">
+        <div class="fx-pose a" id="fxPoseA"></div>
+        <div class="fx-pose b" id="fxPoseB"></div>
+      </div>
+      <div class="fx-name" id="fxName"></div>
+      <div class="fx-meta" id="fxMeta"></div>
+      <div class="fx-cue" id="fxCue"></div>
+    </div>
+    <div class="focus-actions">
+      <a class="fx-watch" id="fxWatch" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg> Watch now</a>
+      <button class="fx-done" onclick="fxMarkDone()"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 12l5 5 9-11" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg> Done</button>
+    </div>
+  </div>
+  <div class="fx-end" id="fxEnd" style="display:none">
+    <div class="fx-end-check"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M5 12l5 5 9-11" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="fx-end-title">Session complete</div>
+    <div class="fx-end-sub" id="fxEndSub">All moves finished. Well done.</div>
+    <button class="fx-done" onclick="fxClose()">Back to plan</button>
+  </div>
+  <div class="fx-rest" id="fxRest" style="display:none">
+    <div class="fx-rest-label">Rest</div>
+    <div class="fx-rest-count" id="fxRestCount">60</div>
+    <div class="fx-rest-next" id="fxRestNext"></div>
+    <button class="fx-restskip" onclick="skipRest()">Skip rest</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
