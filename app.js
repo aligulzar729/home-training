@@ -18,6 +18,17 @@ var STORE_KEY='liverplan_v1';
 function loadStore(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{}; }catch(e){ return {}; } }
 function saveStore(s){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){} }
 var store = loadStore();
+var equipBW = (store.equipBW===undefined) ? true : !!store.equipBW;
+function effItem(it){ return (equipBW && it.bw) ? Object.assign({}, it, it.bw, {start:undefined}) : it; }
+function stripWt(svg){ return svg.replace(/<g class="wt"[^>]*>[\s\S]*?<\/g>/g, ''); }
+function setEquip(bw){
+  equipBW = bw; store.equipBW = bw; saveStore(store);
+  var db=document.getElementById('eq-db'), b=document.getElementById('eq-bw');
+  if(db) db.classList.toggle('on', !bw); if(b) b.classList.toggle('on', bw);
+  renderMode('walked'); renderMode('strength'); renderMode('indoor');
+  restoreAll();
+  setMode(current);
+}
 function today(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function yesterday(){ var d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 function ensureToday(){ var t=today(); if(!store.done || store.done.date!==t){ store.done={date:t, walked:{}, strength:{}, indoor:{}}; saveStore(store); } }
@@ -81,7 +92,8 @@ var SV = {
   catcow: fig('<circle cx="28" cy="60" r="6"/><line x1="31" y1="58" x2="34" y2="56"/><path d="M34 56 Q50 45 64 56"/><line x1="34" y1="56" x2="32" y2="74"/><line x1="64" y1="56" x2="66" y2="74"/>', '', 76),
   hipflex: fig('<circle cx="48" cy="24" r="6.5"/><line x1="48" y1="31" x2="48" y2="54"/><line x1="48" y1="54" x2="38" y2="66"/><line x1="38" y1="66" x2="36" y2="80"/><line x1="48" y1="54" x2="61" y2="73"/><line x1="61" y1="73" x2="73" y2="80"/><line x1="48" y1="38" x2="42" y2="53"/><line x1="48" y1="38" x2="53" y2="50"/>', '', 82),
   thoracic: fig('<circle cx="30" cy="58" r="6"/><line x1="33" y1="57" x2="36" y2="56"/><line x1="36" y1="56" x2="60" y2="60"/><line x1="36" y1="56" x2="34" y2="74"/><line x1="60" y1="60" x2="62" y2="74"/><line x1="40" y1="55" x2="50" y2="40"/>', '', 76),
-  child: fig('<circle cx="28" cy="70" r="6"/><line x1="60" y1="58" x2="34" y2="70"/><line x1="34" y1="70" x2="18" y2="74"/><line x1="60" y1="58" x2="66" y2="76"/><line x1="60" y1="58" x2="64" y2="76"/>', '', 78)
+  child: fig('<circle cx="28" cy="70" r="6"/><line x1="60" y1="58" x2="34" y2="70"/><line x1="34" y1="70" x2="18" y2="74"/><line x1="60" y1="58" x2="66" y2="76"/><line x1="60" y1="58" x2="64" y2="76"/>', '', 78),
+  pushup: fig('<circle cx="68" cy="44" r="6"/><line x1="62" y1="48" x2="42" y2="60"/><line x1="42" y1="60" x2="28" y2="68"/><line x1="28" y1="68" x2="20" y2="60"/><line x1="62" y1="48" x2="62" y2="58"/><line x1="62" y1="58" x2="62" y2="72"/>', '', 74)
 };
 
 /* second pose (the other end of each movement) so the player can animate */
@@ -102,7 +114,8 @@ var SV2 = {
   catcow: fig('<circle cx="26" cy="52" r="6"/><line x1="29" y1="54" x2="34" y2="56"/><path d="M34 56 Q50 66 64 56"/><line x1="34" y1="56" x2="32" y2="74"/><line x1="64" y1="56" x2="66" y2="74"/>', '', 76),
   hipflex: SV.hipflex,
   thoracic: fig('<circle cx="30" cy="58" r="6"/><line x1="33" y1="57" x2="36" y2="56"/><line x1="36" y1="56" x2="60" y2="60"/><line x1="36" y1="56" x2="34" y2="74"/><line x1="60" y1="60" x2="62" y2="74"/><line x1="40" y1="56" x2="28" y2="64"/>', '', 76),
-  child: SV.child
+  child: SV.child,
+  pushup: fig('<circle cx="68" cy="56" r="6"/><line x1="62" y1="60" x2="42" y2="66"/><line x1="42" y1="66" x2="28" y2="68"/><line x1="28" y1="68" x2="20" y2="60"/><line x1="62" y1="60" x2="70" y2="66"/><line x1="70" y1="66" x2="62" y2="72"/>', '', 74)
 };
 function pose2For(a){ var k=Object.keys(SV); for(var i=0;i<k.length;i++){ if(SV[k[i]]===a) return SV2[k[i]]||a; } return a; }
 
@@ -158,7 +171,10 @@ var KF = {
     b:{head:[30,58],sh:[36,56],hip:[60,60],handSup:[34,74],handRot:[28,64],kneeSup:[62,74]}},
   child:{ground:78, head:{j:'head',r:6}, bones:[['hipTop','mid'],['mid','hand'],['hipTop','kneeL'],['hipTop','kneeR']],
     a:{hipTop:[60,58],mid:[34,70],head:[28,70],hand:[18,74],kneeL:[66,76],kneeR:[64,76]},
-    b:{hipTop:[60,57],mid:[34,69],head:[28,69],hand:[18,73],kneeL:[66,76],kneeR:[64,76]}}
+    b:{hipTop:[60,57],mid:[34,69],head:[28,69],hand:[18,73],kneeL:[66,76],kneeR:[64,76]}},
+  pushup:{ground:74, head:{j:'head',r:6}, bones:[['sh','hip'],['hip','knee'],['knee','foot'],['sh','elbow'],['elbow','hand']],
+    a:{head:[68,44],sh:[62,48],hip:[42,60],knee:[28,68],foot:[20,60],elbow:[62,58],hand:[62,72]},
+    b:{head:[68,56],sh:[62,60],hip:[42,66],knee:[28,68],foot:[20,60],elbow:[70,66],hand:[62,72]}}
 };
 
 /* ---------- animation engine (interpolates joints so limbs actually move) ---------- */
@@ -168,7 +184,7 @@ function keyOf(svg){ var k=Object.keys(SV); for(var i=0;i<k.length;i++){ if(SV[k
 function lerp(a,b,t){ return a+(b-a)*t; }
 function easeIO(x){ return x<0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
 function pingT(now,period,phase){ var p=((now/period)+phase)%1; if(p<0)p+=1; var tri=p<0.5?p*2:(1-p)*2; return easeIO(tri); }
-function buildAnim(container,key){
+function buildAnim(container,key,hideWt){
   var kf=KF[key]; if(!kf||!container) return null;
   container.innerHTML='';
   var svg=mkel('svg'); svg.setAttribute('viewBox','0 0 100 100'); svg.setAttribute('class','ex-svg'); svg.setAttribute('aria-hidden','true');
@@ -178,7 +194,7 @@ function buildAnim(container,key){
   (kf.paths||[]).forEach(function(p){ var el=mkel('path'); fig.appendChild(el); refs.paths.push({el:el,p:p}); });
   (kf.bones||[]).forEach(function(bn){ var el=mkel('line'); fig.appendChild(el); refs.bones.push({el:el,b:bn}); });
   if(kf.head){ var hc=mkel('circle'); hc.setAttribute('r',kf.head.r); fig.appendChild(hc); refs.head={el:hc,j:kf.head.j}; }
-  (kf.dumbbells||[]).forEach(function(d){ var g=mkel('g'); g.setAttribute('class','wt');
+  if(!hideWt) (kf.dumbbells||[]).forEach(function(d){ var g=mkel('g'); g.setAttribute('class','wt');
     var r1=mkel('rect'); r1.setAttribute('x',-9); r1.setAttribute('y',-1.6); r1.setAttribute('width',18); r1.setAttribute('height',3.2); r1.setAttribute('rx',1.6);
     var r2=mkel('rect'); r2.setAttribute('x',-9.5); r2.setAttribute('y',-5); r2.setAttribute('width',5); r2.setAttribute('height',10); r2.setAttribute('rx',1.9);
     var r3=mkel('rect'); r3.setAttribute('x',4.5); r3.setAttribute('y',-5); r3.setAttribute('width',5); r3.setAttribute('height',10); r3.setAttribute('rx',1.9);
@@ -199,7 +215,7 @@ function animFrame(now){ if(!animList.length){ animRAF=null; return; } for(var i
 function initCards(mode){
   animList = animList.filter(function(x){ return x.src!=='card'; });
   var arts=document.querySelectorAll('#'+mode+' .art[data-key]');
-  Array.prototype.forEach.call(arts, function(art,i){ var key=art.getAttribute('data-key'); if(!key) return; var wrap=art.querySelector('.figwrap'); var rec=buildAnim(wrap,key); if(!rec) return; if(animReduced){ updateAnim(rec,0); } else { animList.push({rec:rec,phase:(i*0.17)%1,period:2100,src:'card'}); } });
+  Array.prototype.forEach.call(arts, function(art,i){ var key=art.getAttribute('data-key'); if(!key) return; var hideWt=art.getAttribute('data-nowt')==='1'; var wrap=art.querySelector('.figwrap'); var rec=buildAnim(wrap,key,hideWt); if(!rec) return; if(animReduced){ updateAnim(rec,0); } else { animList.push({rec:rec,phase:(i*0.17)%1,period:2100,src:'card'}); } });
   if(!animRAF && !animReduced && animList.length){ animRAF=requestAnimationFrame(animFrame); }
 }
 
@@ -215,7 +231,7 @@ var DATA = {
       { title:'Core and posture', mins:'about 15 minutes', note:'Two or three easy rounds. These steady and protect my spine. No crunching, all quiet.', items:[
         {name:'Dead Bug', gear:'Carpet or mat', reps:'3 x 8 each side', rest:'30 sec', cue:'On my back, reach opposite arm and leg. Deep core control, easy on the back.', ch:'search', q:'dead bug exercise how to beginner', svg:SV.deadbug},
         {name:'Bird Dog', gear:'Carpet or mat', reps:'3 x 8 each side', rest:'30 sec', cue:'On all fours, extend opposite arm and leg. Builds anti twist stability.', ch:'search', q:'bird dog exercise how to', svg:SV.birddog},
-        {name:'Glute Bridge', gear:'Carpet or mat', reps:'3 x 12 to 15', rest:'30 sec', cue:'Drive through my heels and squeeze. Wakes up glutes that sitting switches off.', ch:'search', q:'glute bridge how to beginner', svg:SV.bridge},
+        {name:'Glute Bridge', gear:'Carpet or mat', nowt:true, reps:'3 x 12 to 15', rest:'30 sec', cue:'Drive through my heels and squeeze. Wakes up glutes that sitting switches off.', ch:'search', q:'glute bridge how to beginner', svg:SV.bridge, bw:{name:'Single-Leg Glute Bridge', reps:'3 x 10 each side', ch:'search', q:'single leg glute bridge how to', cue:'One foot planted, the other leg straight, drive up through the heel. A little extra for a no-equipment week.'}},
         {name:'Forearm Plank', gear:'Carpet or mat', reps:'3 x 20 to 40 sec', rest:'40 sec', cue:'Straight line from head to heels, ribs down. Stop if my low back sags.', ch:'search', q:'how to plank correctly beginner', svg:SV.plank},
         {name:'Side Plank', gear:'Carpet or mat', reps:'2 x 15 to 30 sec each side', rest:'30 sec', cue:'On one forearm, hips lifted. Part of the physio McGill Big 3.', ch:'search', q:'side plank how to beginner', svg:SV.sideplank}
       ]},
@@ -234,18 +250,18 @@ var DATA = {
     sections: [
       { title:'Warm up', mins:'about 8 to 10 minutes', note:'Lift my heart rate and prepare the joints I am about to load.', items:[
         {name:'March in Place', gear:'No equipment', reps:'2 to 3 min', rest:'', cue:'Knees up, arms swinging, add big arm circles. Quiet cardio to start.', ch:'search', q:'marching in place warm up beginner', svg:SV.march},
-        {name:'Bodyweight Squat', gear:'No equipment', reps:'2 x 10', rest:'30 sec', cue:'No weight yet. Grooves the squat and warms the legs.', ch:'search', q:'bodyweight squat how to beginner', svg:SV.goblet},
+        {name:'Bodyweight Squat', gear:'No equipment', nowt:true, reps:'2 x 10', rest:'30 sec', cue:'No weight yet. Grooves the squat and warms the legs.', ch:'search', q:'bodyweight squat how to beginner', svg:SV.goblet},
         {name:'Cat and Cow', gear:'Carpet or mat', reps:'8 reps', rest:'', cue:'Prime the spine before I load it.', ch:'search', q:'cat cow stretch how to', svg:SV.catcow}
       ]},
       { title:'Full body dumbbell workout', mins:'about 30 to 40 minutes', note:'Do the first set of each lift at about half weight to groove the movement, then my working sets. Rest 60 to 90 sec between sets. My smallest jump is 1 kg. Never drop the weights, lower them slowly.', items:[
-        {name:'Goblet Squat', gear:'1 dumbbell', start:'Start 8 kg', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Hold one dumbbell at my chest, sit back and down, brace my core.', ch:'Jeremy Ethier', q:'Jeremy Ethier how to goblet squat', svg:SV.goblet},
-        {name:'Romanian Deadlift', gear:'2 dumbbells', start:'Start 6 kg / hand', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Push my hips back with a flat back. Start light and watch my form.', ch:'Jeff Nippard', q:'Jeff Nippard dumbbell romanian deadlift how to', svg:SV.rdl},
-        {name:'Dumbbell Floor Press', gear:'2 dumbbells, carpet', start:'Start 5 kg / hand', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Lie on the carpet and press up. Elbows stop at the floor, a built in safe range.', ch:'search', q:'dumbbell floor press form how to', svg:SV.floorpress},
-        {name:'Dumbbell Row', gear:'2 dumbbells', start:'Start 7 kg / hand', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Hinge, pull the dumbbell to my ribs, squeeze the shoulder blade. Fixes desk slouch.', ch:'Jeremy Ethier', q:'Jeremy Ethier dumbbell row how to', svg:SV.row},
-        {name:'Overhead Press', gear:'2 dumbbells', start:'Start 4 kg / hand', reps:'3 x 8 to 12', rest:'60 to 90 sec', cue:'Press up without leaning back. If my back complains, I do it seated on the sofa.', ch:'Jeremy Ethier', q:'Jeremy Ethier dumbbell shoulder press how to', svg:SV.ohp},
-        {name:'Reverse Lunge', gear:'Bodyweight, later 2 dumbbells', start:'Start bodyweight', reps:'2 to 3 x 8 to 10 each leg', rest:'60 sec', cue:'Step backward, gentler on the knees and quieter. Hold a wall for balance early. Optional in my first month if the session runs long.', ch:'search', q:'dumbbell reverse lunge how to beginner', svg:SV.lunge},
-        {name:'Glute Bridge', gear:'1 dumbbell, carpet', start:'Start 8 kg', reps:'3 x 12 to 15', rest:'45 sec', cue:'Dumbbell on my hips, drive through heels, pause at the top.', ch:'search', q:'weighted glute bridge how to', svg:SV.bridge},
-        {name:"Farmer's Carry", gear:'2 dumbbells', start:'Start 8 kg / hand', reps:'3 x 30 to 40 sec', rest:'60 sec', cue:'Heavy dumbbells, stand tall, march on the spot. Grip, core, posture, silent. Optional in my first month.', ch:'search', q:'farmers carry how to form', svg:SV.carry},
+        {name:'Goblet Squat', gear:'1 dumbbell', start:'Start 8 kg', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Hold one dumbbell at my chest, sit back and down, brace my core.', ch:'Jeremy Ethier', q:'Jeremy Ethier how to goblet squat', svg:SV.goblet, bw:{name:'Bodyweight Squat', gear:'No equipment', nowt:true, ch:'search', q:'bodyweight squat how to beginner', cue:'Sit back and down like into a chair, chest up, drive through my heels. Slow the lower to 3 counts to make it harder.'}},
+        {name:'Romanian Deadlift', gear:'2 dumbbells', start:'Start 6 kg / hand', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Push my hips back with a flat back. Start light and watch my form.', ch:'Jeff Nippard', q:'Jeff Nippard dumbbell romanian deadlift how to', svg:SV.rdl, bw:{name:'Good Morning', gear:'No equipment', nowt:true, ch:'search', q:'bodyweight good morning exercise how to', cue:'Hands behind my head, push my hips back with a flat back, feel the hamstrings, then stand tall. Progress to single leg later.'}},
+        {name:'Dumbbell Floor Press', gear:'2 dumbbells, carpet', start:'Start 5 kg / hand', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Lie on the carpet and press up. Elbows stop at the floor, a built in safe range.', ch:'search', q:'dumbbell floor press form how to', svg:SV.floorpress, bw:{name:'Push-Up, wall to floor', gear:'Wall or floor', nowt:true, ch:'search', q:'push up progression wall knees full beginner', svg:SV.pushup, cue:'Start on the wall or a counter, then knees, then full as I get stronger. Chest, shoulders, triceps.'}},
+        {name:'Dumbbell Row', gear:'2 dumbbells', start:'Start 7 kg / hand', reps:'3 x 10 to 12', rest:'60 to 90 sec', cue:'Hinge, pull the dumbbell to my ribs, squeeze the shoulder blade. Fixes desk slouch.', ch:'Jeremy Ethier', q:'Jeremy Ethier dumbbell row how to', svg:SV.row, bw:{name:'Towel Row (or back squeeze)', gear:'A towel + a door', nowt:true, ch:'search', q:'towel row door bodyweight back exercise how to', cue:'Loop a towel around a sturdy door handle, lean back and pull my chest to my hands, squeezing my shoulder blades. Trains the pull the row would.'}},
+        {name:'Overhead Press', gear:'2 dumbbells', start:'Start 4 kg / hand', reps:'3 x 8 to 12', rest:'60 to 90 sec', cue:'Press up without leaning back. If my back complains, I do it seated on the sofa.', ch:'Jeremy Ethier', q:'Jeremy Ethier dumbbell shoulder press how to', svg:SV.ohp, bw:{name:'Wall Press or Pike Push-Up', gear:'Wall or floor', nowt:true, ch:'search', q:'pike push up wall press shoulders beginner', cue:'Press hard into a wall at an angle, or with hips piked high lower my head toward the floor. Shoulders and triceps, no weight needed.'}},
+        {name:'Reverse Lunge', gear:'Bodyweight, later 2 dumbbells', start:'Start bodyweight', reps:'2 to 3 x 8 to 10 each leg', rest:'60 sec', cue:'Step backward, gentler on the knees and quieter. Hold a wall for balance early. Optional in my first month if the session runs long.', ch:'search', q:'dumbbell reverse lunge how to beginner', svg:SV.lunge, bw:{name:'Reverse Lunge', gear:'No equipment', nowt:true, cue:'Step backward, front thigh toward parallel, hold a wall for balance early. Add a pause at the bottom to make it harder.'}},
+        {name:'Glute Bridge', gear:'1 dumbbell, carpet', start:'Start 8 kg', reps:'3 x 12 to 15', rest:'45 sec', cue:'Dumbbell on my hips, drive through heels, pause at the top.', ch:'search', q:'weighted glute bridge how to', svg:SV.bridge, bw:{name:'Single-Leg Glute Bridge', gear:'Carpet or mat', nowt:true, reps:'3 x 10 each side', ch:'search', q:'single leg glute bridge how to', cue:'One foot planted, the other leg straight out, drive up through the heel. Much harder than it looks, no weight needed.'}},
+        {name:"Farmer's Carry", gear:'2 dumbbells', start:'Start 8 kg / hand', reps:'3 x 30 to 40 sec', rest:'60 sec', cue:'Heavy dumbbells, stand tall, march on the spot. Grip, core, posture, silent. Optional in my first month.', ch:'search', q:'farmers carry how to form', svg:SV.carry, bw:{name:'Long Forearm Plank', gear:'Carpet or mat', nowt:true, reps:'3 x 30 to 45 sec', ch:'search', q:'forearm plank hold longer how to', svg:SV.plank, cue:'Straight line, brace hard, breathe. Trains the core and posture the carry would.'}},
         {name:'Forearm Plank', gear:'Carpet or mat', reps:'3 x 20 to 40 sec', rest:'40 sec', cue:'Finish the core. Straight line, ribs down.', ch:'search', q:'how to plank correctly beginner', svg:SV.plank}
       ]},
       { title:'Cool down', mins:'about 5 to 10 minutes', note:'Optional easy cardio if I skipped the walk today, then stretch out.', items:[
@@ -272,7 +288,7 @@ var DATA = {
       { title:'Core circuit', mins:'about 12 minutes', note:'Two easy rounds, the same spine friendly work as walk days.', items:[
         {name:'Dead Bug', gear:'Carpet or mat', reps:'2 x 8 each side', rest:'30 sec', cue:'On my back, reach opposite arm and leg. Deep core control.', ch:'search', q:'dead bug exercise how to beginner', svg:SV.deadbug},
         {name:'Bird Dog', gear:'Carpet or mat', reps:'2 x 8 each side', rest:'30 sec', cue:'On all fours, extend opposite arm and leg. Steady, no wobble.', ch:'search', q:'bird dog exercise how to', svg:SV.birddog},
-        {name:'Glute Bridge', gear:'Carpet or mat', reps:'2 x 12 to 15', rest:'30 sec', cue:'Drive through heels, squeeze at the top.', ch:'search', q:'glute bridge how to beginner', svg:SV.bridge},
+        {name:'Glute Bridge', gear:'Carpet or mat', nowt:true, reps:'2 x 12 to 15', rest:'30 sec', cue:'Drive through heels, squeeze at the top.', ch:'search', q:'glute bridge how to beginner', svg:SV.bridge, bw:{name:'Single-Leg Glute Bridge', reps:'2 x 10 each side', ch:'search', q:'single leg glute bridge how to', cue:'One foot planted, other leg straight, drive up through the heel. A little extra for a no-equipment week.'}},
         {name:'Forearm Plank', gear:'Carpet or mat', reps:'2 x 20 to 40 sec', rest:'40 sec', cue:'Straight line, ribs down. Stop if the low back sags.', ch:'search', q:'how to plank correctly beginner', svg:SV.plank}
       ]},
       { title:'Cool down', mins:'about 5 minutes', note:'Wind down before the evening.', items:[
@@ -284,8 +300,10 @@ var DATA = {
 
 function card(e, mode, idx){
   var restHtml = e.rest ? '<span class="rest">rest '+e.rest+'</span>' : '';
+  var hide = equipBW || e.nowt;
+  var fig = hide ? stripWt(e.svg) : e.svg;
   return '<div class="card" id="'+mode+'-'+idx+'">'
-    + '<div class="art" data-key="'+(keyOf(e.svg)||'')+'"><div class="figwrap">'+e.svg+'</div><div class="ribbon">'+RIBBON+'</div></div>'
+    + '<div class="art" data-key="'+(keyOf(e.svg)||'')+'" data-nowt="'+(hide?1:0)+'"><div class="figwrap">'+fig+'</div><div class="ribbon">'+RIBBON+'</div></div>'
     + '<div class="body">'
     +   '<div class="name">'+e.name+'</div>'
     +   '<div class="meta"><span class="badge">'+e.reps+'</span>'+(e.start?'<span class="start">'+e.start+'</span>':'')+restHtml+'</div>'
@@ -307,13 +325,14 @@ function renderMode(mode){
   d.sections.forEach(function(s){
     html += '<div class="sec"><div class="sechead"><h3>'+s.title+'</h3><span class="mins">'+s.mins+'</span></div>'
       + '<p class="secnote">'+s.note+'</p><div class="grid">'
-      + s.items.map(function(it){ return card(it, mode, n++); }).join('')
+      + s.items.map(function(it){ return card(effItem(it), mode, n++); }).join('')
       + '</div></div>';
   });
   document.getElementById(mode).innerHTML = html;
 }
 renderMode('walked'); renderMode('strength'); renderMode('indoor');
 restoreAll(); renderProgress();
+(function(){ var db=document.getElementById('eq-db'), b=document.getElementById('eq-bw'); if(db) db.classList.toggle('on', !equipBW); if(b) b.classList.toggle('on', equipBW); })();
 
 var current = 'walked';
 function toggleDone(cardId, mode){
@@ -418,9 +437,10 @@ function fxRender(){
   document.getElementById('fxRest').style.display='none';
   document.getElementById('fxEnd').style.display='none';
   document.getElementById('fxMain').style.display='flex';
-  var e=fxList[fxIdx].it;
-  document.getElementById('fxPoseA').innerHTML=e.svg;
-  document.getElementById('fxPoseB').innerHTML=pose2For(e.svg);
+  var e=effItem(fxList[fxIdx].it);
+  var hide=equipBW||e.nowt;
+  document.getElementById('fxPoseA').innerHTML=hide?stripWt(e.svg):e.svg;
+  document.getElementById('fxPoseB').innerHTML=hide?stripWt(pose2For(e.svg)):pose2For(e.svg);
   document.getElementById('fxName').textContent=e.name;
   document.getElementById('fxMeta').innerHTML='<span>'+e.reps+'</span>'+(e.start?'<span>'+e.start+'</span>':'')+(e.gear?'<span class="gr">'+GEAR+' '+e.gear+'</span>':'')+(e.rest?'<span class="rst">rest '+e.rest+(parseRest(e.rest)>0?' between sets':'')+'</span>':'');
   document.getElementById('fxCue').textContent=e.cue;
@@ -438,7 +458,7 @@ function fxMarkDone(){
   persistDone(current, cur.id, true);
   refresh(); ensureAudio();
   if(fxIdx>=fxList.length-1){ fxComplete(); return; }
-  var rs=parseRest(cur.it.rest);
+  var rs=parseRest(effItem(cur.it).rest);
   if(rs>0){ showRest(rs); } else { fxIdx++; fxRender(); }
 }
 function fxComplete(){
