@@ -186,7 +186,15 @@
 
   .foot{margin-top:38px; padding-top:22px; border-top:1px solid var(--line); font-size:12.4px; color:var(--ink-faint); line-height:1.7; text-align:center;}
 
-  /* start button */
+  /* equipment toggle */
+  .equiprow{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:18px;}
+  .equiplbl{font-size:13px; font-weight:700; color:var(--ink-soft);}
+  .seg2{display:inline-flex; background:var(--line-soft); border-radius:12px; padding:3px;}
+  .seg2 button{font:inherit; cursor:pointer; border:none; background:transparent; color:var(--ink-soft); font-size:13px; font-weight:600; padding:8px 15px; border-radius:9px; transition:.15s;}
+  .seg2 button.on{background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(26,35,30,.14);}
+  .seg2 button:focus-visible{outline:2px solid var(--green); outline-offset:1px;}
+  .equipnote{font-size:12.5px; color:var(--ink-faint);}
+  @media (max-width:520px){ .equipnote{flex-basis:100%;} }
   .startbtn{display:inline-flex; align-items:center; gap:11px; margin-top:20px; cursor:pointer; font:inherit; color:#fff; background:var(--accent,var(--green)); border:none; border-radius:13px; padding:13px 20px; transition:transform .16s, filter .16s; box-shadow:var(--shadow-lift);}
   .startbtn:hover{filter:brightness(1.07); transform:translateY(-1px);}
   .startbtn:focus-visible{outline:3px solid var(--accent,var(--green)); outline-offset:2px;}
